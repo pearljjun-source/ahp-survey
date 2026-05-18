@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>충남 지역혁신체제 AHP 전문가 설문</title>
+<style>
+  :root {
+    --primary: #1F4E79;
+    --primary-light: #D6E4F0;
+    --accent: #2E86C1;
+    --green: #27AE60;
+    --orange: #E67E22;
+    --red: #C0392B;
+    --bg: #F5F7FA;
+    --card: #FFFFFF;
+    --text: #2C3E50;
+    --border: #DCE1E8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 20px; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    padding: 40px 30px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .header h1 { font-size: 22px; margin-bottom: 8px; }
+  .header h2 { font-size: 17px; font-weight: 400; opacity: 0.9; }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+  .card h3 {
+    color: var(--primary);
+    font-size: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary-light);
+  }
+
+  /* Info box */
+  .info-box {
+    background: var(--primary-light);
+    border-left: 4px solid var(--primary);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+
+  /* Form fields */
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px;
+  }
+  .form-group input, .form-group select {
+    width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; font-family: inherit;
+  }
+  .form-group input:focus, .form-group select:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(46,134,193,0.15);
+  }
+  .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; }
+  .checkbox-group label {
+    font-weight: 400; display: flex; align-items: center; gap: 5px;
+    background: var(--bg); padding: 6px 12px; border-radius: 6px; font-size: 13px;
+    cursor: pointer; border: 1px solid var(--border);
+  }
+  .checkbox-group label:hover { border-color: var(--accent); }
+
+  /* AHP Scale */
+  .scale-info {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 2px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 11px;
+  }
+  .scale-info div {
+    padding: 6px 2px;
+    border-radius: 6px;
+    background: var(--bg);
+  }
+  .scale-info .center-scale { background: var(--green); color: white; }
+  .scale-info .left-scale { background: #EBF5FB; }
+  .scale-info .right-scale { background: #FDEDEC; }
+
+  /* Pairwise comparison table */
+  .pair-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  .pair-table th {
+    background: var(--primary);
+    color: white;
+    padding: 10px 6px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+  }
+  .pair-table td {
+    padding: 8px 4px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .pair-table tr:hover { background: #F8FAFC; }
+  .pair-table .item-left {
+    text-align: right; padding-right: 10px; font-weight: 600;
+    color: var(--accent); min-width: 120px; font-size: 12px;
+  }
+  .pair-table .item-right {
+    text-align: left; padding-left: 10px; font-weight: 600;
+    color: var(--red); min-width: 120px; font-size: 12px;
+  }
+
+  /* Radio styling */
+  .pair-table input[type="radio"] { display: none; }
+  .pair-table label.radio-label {
+    display: inline-block;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 26px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #999;
+  }
+  .pair-table label.radio-label:hover {
+    border-color: var(--accent);
+    background: var(--primary-light);
+  }
+  .pair-table input[type="radio"]:checked + label.radio-label {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+  .pair-table input[type="radio"]:checked + label.radio-label.center-radio {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  /* Progress */
+  .progress-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: white; padding: 10px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 0 0 12px 12px;
+  }
+  .progress-track {
+    height: 8px; background: #E8ECF0; border-radius: 4px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--green));
+    border-radius: 4px; transition: width 0.3s;
+  }
+  .progress-text {
+    font-size: 12px; color: #888; margin-top: 4px; text-align: right;
+  }
+
+  /* Section tag */
+  .section-tag {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+  .section-desc {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 16px;
+    padding: 10px;
+    background: #FFF9E6;
+    border-radius: 8px;
+    border-left: 3px solid var(--orange);
+  }
+
+  /* Submit */
+  .submit-area { text-align: center; padding: 30px 0; }
+  .btn-submit {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    border: none;
+    padding: 16px 48px;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+  }
+  .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(31,78,121,0.3);
+  }
+  .btn-submit:disabled {
+    background: #ccc; cursor: not-allowed; transform: none; box-shadow: none;
+  }
+
+  /* Validation */
+  .pair-row.incomplete { background: #FFF5F5 !important; }
+  .pair-row.complete { background: #F0FFF4 !important; }
+  .error-msg {
+    color: var(--red); font-size: 13px; margin-top: 8px;
+    display: none; font-weight: 600;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 90%;
+    text-align: center;
+  }
+  .modal h3 { color: var(--green); margin-bottom: 12px; font-size: 20px; }
+  .modal p { margin-bottom: 20px; font-size: 14px; color: #666; }
+  .modal .btn-download {
+    background: var(--green); color: white; border: none;
+    padding: 14px 36px; font-size: 15px; font-weight: 700;
+    border-radius: 10px; cursor: pointer; font-family: inherit;
+    margin: 6px;
+  }
+  .modal .btn-download:hover { background: #219A52; }
+  .modal .btn-close {
+    background: #eee; color: #666; border: none;
+    padding: 10px 24px; font-size: 13px; border-radius: 8px;
+    cursor: pointer; font-family: inherit; margin-top: 10px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container { padding: 10px; }
+    .card { padding: 16px; }
+    .header { padding: 24px 16px; }
+    .header h1 { font-size: 17px; }
+    .pair-table label.radio-label { width: 26px; height: 26px; line-height: 22px; font-size: 10px; }
+    .pair-table .item-left, .pair-table .item-right { font-size: 11px; min-width: 80px; }
+    .pair-table th { font-size: 10px; padding: 6px 2px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-bar">
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">0 / 33 항목 완료</div>
+</div>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>충남 지역혁신체제 구축을 위한 핵심가치와 정책요인의 우선순위 분석</h1>
+    <h2>AHP 전문가 설문지</h2>
+  </div>
+
+  <!-- Introduction -->
+  <div class="card">
+    <h3>설문 안내</h3>
+    <p style="font-size:14px; margin-bottom:12px;">
+      본 설문의 목적은 충남 지역혁신체제 구축을 위한 핵심가치와 정책요인의 상대적 중요도와 우선순위를 분석하기 위해
+      AHP(Analytic Hierarchy Process) 기법을 적용한 전문가 설문입니다.
+    </p>
+    <p style="font-size:13px; color:#888;">
+      본 설문과 관련된 모든 응답과 개인적인 사항은 통계법 제33조에 따라 비밀로 처리되며, 연구에 필요한 통계분석의 목적 외에는 절대 사용되지 않습니다.
+    </p>
+    <div style="margin-top:12px; font-size:13px; color:#666;">
+      <div>조사기간: 2026년 5월 01일 ~ 2026년 5월 31일</div>
+      <div>조사방법: 온라인/오프라인 병행</div>
+      <div>문의: 단국대학교 과학기술정책연구센터 / 0Laser@dankook.ac.kr</div>
+    </div>
+  </div>
+
+  <!-- Section 1: Respondent Info -->
+  <div class="card">
+    <h3>1. 응답자 일반사항</h3>
+    <div class="info-box">해당되는 항목에 표시하거나 내용을 기입해 주십시오. 응답 내용은 연구목적으로만 활용됩니다.<br>
+    연락처는 커피 쿠폰 발송을 위한 자료로 활용되며, 쿠폰 발송 이후 즉시 폐기합니다.</div>
+
+    <div class="form-group">
+      <label>소속 유형</label>
+      <select id="resp_type">
+        <option value="">-- 선택 --</option>
+        <option value="기업">기업</option>
+        <option value="연구기관">연구기관</option>
+        <option value="정부(공공기관)">정부(공공기관)</option>
+        <option value="대학 및 출연연">대학 및 출연연</option>
+        <option value="컨설팅 기관">컨설팅 기관</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>소속기관/기업(이름)</label>
+      <input type="text" id="resp_org" placeholder="소속기관명을 입력해 주세요">
+    </div>
+    <div class="form-group">
+      <label>직위/직책</label>
+      <select id="resp_position">
+        <option value="">-- 선택 --</option>
+        <option value="대표">대표</option>
+        <option value="관리자">관리자</option>
+        <option value="실무자">실무자</option>
+        <option value="연구자/교수">연구자/교수</option>
+        <option value="공직자">공직자</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>관심 분야 (중복선택 가능)</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="지역혁신정책"> 지역혁신정책</label>
+        <label><input type="checkbox" value="기업지원"> 기업지원</label>
+        <label><input type="checkbox" value="연구개발"> 연구개발</label>
+        <label><input type="checkbox" value="산학협력"> 산학협력</label>
+        <label><input type="checkbox" value="기술사업화"> 기술사업화</label>
+        <label><input type="checkbox" value="산업정책"> 산업정책</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>관련 경력</label>
+      <select id="resp_career">
+        <option value="">-- 선택 --</option>
+        <option value="5년 미만">5년 미만</option>
+        <option value="5~10년">5~10년</option>
+        <option value="10~15년">10~15년</option>
+        <option value="15년 이상">15년 이상</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>성별</label>
+      <select id="resp_gender">
+        <option value="">-- 선택 --</option>
+        <option value="남성">남성</option>
+        <option value="여성">여성</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>연락처 (커피쿠폰 발송용)</label>
+      <input type="tel" id="resp_phone" placeholder="010-0000-0000">
+    </div>
+  </div>
+
+  <!-- Section 2: AHP 응답방법 -->
+  <div class="card">
+    <h3>2. AHP 응답방법 안내</h3>
+    <p style="font-size:14px; margin-bottom:16px;">
+      두 항목을 비교하여 상대적으로 어느 항목이 더 중요한지 판단합니다.<br>
+      <strong>왼쪽</strong>이 더 중요하면 왼쪽 숫자에, <strong>오른쪽</strong>이 더 중요하면 오른쪽 숫자에, 동등하면 가운데 <strong>1</strong>에 표시합니다.
+    </p>
+    <div class="scale-info">
+      <div class="left-scale"><strong>9</strong><br>절대적</div>
+      <div class="left-scale"><strong>7</strong><br>매우</div>
+      <div class="left-scale"><strong>5</strong><br>강하게</div>
+      <div class="left-scale"><strong>3</strong><br>약간</div>
+      <div class="center-scale"><strong>1</strong><br>동등</div>
+      <div class="right-scale"><strong>3</strong><br>약간</div>
+      <div class="right-scale"><strong>5</strong><br>강하게</div>
+      <div class="right-scale"><strong>7</strong><br>매우</div>
+      <div class="right-scale"><strong>9</strong><br>절대적</div>
+    </div>
+    <div style="display:flex; justify-content:space-between; font-size:12px; color:#888;">
+      <span>&#8592; 왼쪽 항목이 더 중요</span>
+      <span>오른쪽 항목이 더 중요 &#8594;</span>
+    </div>
+  </div>
+
+  <!-- Section 3: AHP 분석모형 -->
+  <div class="card">
+    <h3>3. AHP 분석모형 및 평가항목</h3>
+    <p style="font-size:13px; margin-bottom:16px; color:#666;">
+      본 연구의 AHP 분석모형은 제1계층 핵심가치, 제2계층 정책요인으로 구성됩니다. 아래 표를 확인 후 설문에 응답해 주세요.
+    </p>
+    <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:12px;">
+      <thead>
+        <tr style="background:var(--primary); color:white;">
+          <th style="padding:10px; border:1px solid #fff;">핵심가치</th>
+          <th style="padding:10px; border:1px solid #fff;">정의</th>
+          <th style="padding:10px; border:1px solid #fff;">정책요인</th>
+        </tr>
+      </thead>
+      <tbody id="hierarchyTable"></tbody>
+    </table>
+  </div>
+
+  <!-- Section 4: Level 1 Pairwise Comparison -->
+  <div class="card">
+    <h3>4. 제1계층: 핵심가치 간 쌍대비교</h3>
+    <span class="section-tag">6개 핵심가치 비교 (15문항)</span>
+    <div class="section-desc">
+      충남 지역혁신체제 구축을 위해 여섯 가지 핵심가치 간 상대적 중요도를 비교합니다. 각 문항에서 더 중요하다고 판단되는 쪽의 숫자를 선택해 주십시오.
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="pair-table" id="table_L1"></table>
+    </div>
+    <div class="error-msg" id="error_L1">모든 항목에 응답해 주세요.</div>
+  </div>
+
+  <!-- Section 5: Level 2 Pairwise Comparisons -->
+  <div id="level2Sections"></div>
+
+  <!-- Section 6: Additional Comments -->
+  <div class="card">
+    <h3>6. 추가 의견</h3>
+    <p style="font-size:13px; color:#666; margin-bottom:12px;">
+      충남 지역혁신체제 구축을 위한 핵심가치 또는 정책요인과 관련하여 추가 의견이 있으시면 자유롭게 작성해 주십시오.
+    </p>
+    <textarea id="comments" rows="5" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; resize:vertical;" placeholder="추가 의견을 입력해 주세요 (선택사항)"></textarea>
+  </div>
+
+  <!-- Submit -->
+  <div class="submit-area">
+    <button class="btn-submit" id="btnSubmit" onclick="submitSurvey()">설문 제출</button>
+    <div class="error-msg" id="globalError" style="margin-top:12px;">미완료 항목이 있습니다. 위로 스크롤하여 확인해 주세요.</div>
+  </div>
+
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal">
+    <div style="font-size:48px; margin-bottom:12px;">&#10003;</div>
+    <h3>설문이 완료되었습니다!</h3>
+    <p>소중한 응답에 감사드립니다.<br>응답 결과가 정상적으로 제출되었습니다.</p>
+    <button class="btn-close" onclick="closeModal()" style="margin-top:16px; padding:12px 32px; font-size:14px;">닫기</button>
+  </div>
+</div>
+
+<!-- Submitting Modal -->
+<div class="modal-overlay" id="submittingModal">
+  <div class="modal">
+    <div style="font-size:36px; margin-bottom:12px; animation: spin 1s linear infinite;">&#9881;</div>
+    <h3 style="color:var(--accent);">제출 중...</h3>
+    <p>잠시만 기다려 주세요.</p>
+  </div>
+</div>
+
+<style>
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+
+<script>
+// ============================================================
+// Data Definition
+// ============================================================
+const LEVEL1 = ["자립성", "연계성", "실용성", "포용성", "지속가능성", "확장성"];
+const LEVEL1_DEF = {
+  "자립성": "지역이 외부 의존을 줄이고 자체 혁신역량을 축적하는 능력",
+  "연계성": "지역혁신주체 간 네트워크와 협력의 정도",
+  "실용성": "지역혁신정책이 기업성과와 산업현장 문제 해결로 연결되는 정도",
+  "포용성": "다양한 지역 주체가 혁신과정에 참여하고 성과를 공유하는 정도",
+  "지속가능성": "지역혁신체제가 장기적으로 유지·발전될 수 있는 제도적 기반",
+  "확장성": "지역 내부 혁신성과가 외부시장, 신산업, 글로벌 네트워크로 확산되는 능력"
+};
+const LEVEL2 = {
+  "자립성": ["지역 R&D 역량 강화", "지역기업 기술흡수역량 강화", "지역혁신 인재양성"],
+  "연계성": ["산·학·연·관 협력 강화", "기업 간 네트워크 활성화", "중간지원기관 조정 기능 강화"],
+  "실용성": ["기술사업화 지원", "기업 기술애로 해결", "매출·고용 창출 연계"],
+  "포용성": ["중소기업 정책 접근성 강화", "청년·창업기업 참여 확대", "지역대학 및 지역사회 참여 확대"],
+  "지속가능성": ["정책 연속성 확보", "혁신거버넌스 안정화", "혁신인프라 유지·고도화"],
+  "확장성": ["외부 지식·기술 연계", "글로벌 시장 진출 지원", "신산업 전환 및 확산"]
+};
+const LEVEL2_DESC = {
+  "자립성": "지역이 외부 의존을 줄이고 자체 혁신역량을 축적하는 능력",
+  "연계성": "지역혁신주체 간 네트워크와 협력의 정도",
+  "실용성": "지역혁신정책이 기업성과와 산업현장 문제 해결로 연결되는 정도",
+  "포용성": "다양한 지역 주체가 혁신과정에 참여하고 성과를 공유하는 정도",
+  "지속가능성": "지역혁신체제가 장기적으로 유지·발전될 수 있는 제도적 기반",
+  "확장성": "지역 내부 혁신성과가 외부시장, 신산업, 글로벌 네트워크로 확산되는 능력"
+};
+
+const scaleValues = [9, 7, 5, 3, 1, 3, 5, 7, 9];
+// Actual numeric values: left importance = 9,7,5,3 (positive), equal=1, right importance = 1/3,1/5,1/7,1/9
+const scaleNumeric = [9, 7, 5, 3, 1, 1/3, 1/5, 1/7, 1/9];
+
+let allPairData = {}; // Store all responses
+
+// ============================================================
+// Build Hierarchy Table
+// ============================================================
+function buildHierarchyTable() {
+  const tbody = document.getElementById('hierarchyTable');
+  const colors = ['#EBF5FB','#E8F8F5','#FEF9E7','#FDEDEC','#F4ECF7','#FDEBD0'];
+  LEVEL1.forEach((key, idx) => {
+    const factors = LEVEL2[key].map(f => '- ' + f).join('<br>');
+    tbody.innerHTML += `<tr style="background:${colors[idx]}">
+      <td style="padding:10px; border:1px solid #ddd; font-weight:700; text-align:center;">${key}</td>
+      <td style="padding:10px; border:1px solid #ddd; font-size:12px;">${LEVEL1_DEF[key]}</td>
+      <td style="padding:10px; border:1px solid #ddd; font-size:12px;">${factors}</td>
+    </tr>`;
+  });
+}
+
+// ============================================================
+// Build Pairwise Comparison Table
+// ============================================================
+function buildPairTable(tableId, items) {
+  const table = document.getElementById(tableId);
+  const pairs = [];
+  for (let i = 0; i < items.length; i++) {
+    for (let j = i + 1; j < items.length; j++) {
+      pairs.push([items[i], items[j], i, j]);
+    }
+  }
+
+  let html = `<thead><tr>
+    <th style="width:20%">왼쪽 항목</th>
+    <th>9</th><th>7</th><th>5</th><th>3</th>
+    <th style="background:var(--green)">1</th>
+    <th>3</th><th>5</th><th>7</th><th>9</th>
+    <th style="width:20%">오른쪽 항목</th>
+  </tr></thead><tbody>`;
+
+  pairs.forEach(([left, right, li, ri], pIdx) => {
+    const name = `${tableId}_${pIdx}`;
+    html += `<tr class="pair-row" id="row_${name}">
+      <td class="item-left">${left}</td>`;
+    scaleValues.forEach((v, sIdx) => {
+      const isCenter = sIdx === 4;
+      html += `<td>
+        <input type="radio" name="${name}" id="${name}_${sIdx}" value="${sIdx}"
+               onchange="onRadioChange('${tableId}', '${name}', ${sIdx}, ${li}, ${ri})">
+        <label for="${name}_${sIdx}" class="radio-label ${isCenter ? 'center-radio' : ''}">${v}</label>
+      </td>`;
+    });
+    html += `<td class="item-right">${right}</td></tr>`;
+  });
+
+  html += '</tbody>';
+  table.innerHTML = html;
+}
+
+// ============================================================
+// Build Level 2 Sections
+// ============================================================
+function buildLevel2Sections() {
+  const container = document.getElementById('level2Sections');
+  LEVEL1.forEach((key, idx) => {
+    const tableId = `table_${key}`;
+    const n = LEVEL2[key].length;
+    const numPairs = n * (n - 1) / 2;
+    container.innerHTML += `
+    <div class="card">
+      <h3>5.${idx + 1} ${key} - 정책요인 간 쌍대비교</h3>
+      <span class="section-tag">${n}개 정책요인 비교 (${numPairs}문항)</span>
+      <div class="section-desc">${LEVEL2_DESC[key]}</div>
+      <div style="overflow-x:auto;">
+        <table class="pair-table" id="${tableId}"></table>
+      </div>
+      <div class="error-msg" id="error_${key}">모든 항목에 응답해 주세요.</div>
+    </div>`;
+  });
+}
+
+// ============================================================
+// Radio Change Handler
+// ============================================================
+function onRadioChange(tableId, name, scaleIdx, leftIdx, rightIdx) {
+  if (!allPairData[tableId]) allPairData[tableId] = {};
+  allPairData[tableId][name] = {
+    scaleIdx: scaleIdx,
+    numericValue: scaleNumeric[scaleIdx],
+    leftIdx: leftIdx,
+    rightIdx: rightIdx
+  };
+
+  // Visual feedback
+  const row = document.getElementById('row_' + name);
+  if (row) {
+    row.classList.remove('incomplete');
+    row.classList.add('complete');
+  }
+
+  updateProgress();
+}
+
+// ============================================================
+// Progress Update
+// ============================================================
+function updateProgress() {
+  let total = 0;
+  let completed = 0;
+
+  // Count L1 pairs
+  const n1 = LEVEL1.length;
+  total += n1 * (n1 - 1) / 2;
+  completed += Object.keys(allPairData['table_L1'] || {}).length;
+
+  // Count L2 pairs
+  LEVEL1.forEach(key => {
+    const n2 = LEVEL2[key].length;
+    total += n2 * (n2 - 1) / 2;
+    completed += Object.keys(allPairData[`table_${key}`] || {}).length;
+  });
+
+  const pct = Math.round((completed / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${completed} / ${total} 항목 완료 (${pct}%)`;
+}
+
+// ============================================================
+// Validation
+// ============================================================
+function validate() {
+  let valid = true;
+  const sections = ['L1', ...LEVEL1];
+  const tableIds = ['table_L1', ...LEVEL1.map(k => `table_${k}`)];
+  const items = [LEVEL1, ...LEVEL1.map(k => LEVEL2[k])];
+
+  for (let s = 0; s < sections.length; s++) {
+    const tid = tableIds[s];
+    const n = items[s].length;
+    const expected = n * (n - 1) / 2;
+    const actual = Object.keys(allPairData[tid] || {}).length;
+
+    const errEl = document.getElementById('error_' + sections[s]);
+    if (actual < expected) {
+      valid = false;
+      if (errEl) errEl.style.display = 'block';
+      // Mark incomplete rows
+      for (let p = 0; p < expected; p++) {
+        const name = `${tid}_${p}`;
+        const row = document.getElementById('row_' + name);
+        if (row && !row.classList.contains('complete')) {
+          row.classList.add('incomplete');
+        }
+      }
+    } else {
+      if (errEl) errEl.style.display = 'none';
+    }
+  }
+  return valid;
+}
+
+// ============================================================
+// Google Apps Script Web App URL (설정 필요)
+// 아래 URL을 본인의 Google Apps Script 배포 URL로 교체하세요.
+// 설정 방법은 "설정안내.html" 파일을 참고하세요.
+// ============================================================
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcVNVVvfoiIQzvLHBIStywPCK4ellKDKM0H4aj5qZ_u1t39LrN4JjBzxQJgxr8PGevXw/exec';
+
+// ============================================================
+// Submit
+// ============================================================
+function submitSurvey() {
+  if (!validate()) {
+    document.getElementById('globalError').style.display = 'block';
+    const firstError = document.querySelector('.pair-row.incomplete');
+    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  document.getElementById('globalError').style.display = 'none';
+
+  // Show submitting modal
+  document.getElementById('submittingModal').classList.add('active');
+
+  // Collect data and send to Google Sheets
+  const data = collectFormData();
+  sendToGoogleSheets(data);
+}
+
+// ============================================================
+// Collect Form Data
+// ============================================================
+function collectFormData() {
+  const timestamp = new Date().toLocaleString('ko-KR');
+  const respType = document.getElementById('resp_type').value;
+  const respOrg = document.getElementById('resp_org').value;
+  const respPos = document.getElementById('resp_position').value;
+  const respCareer = document.getElementById('resp_career').value;
+  const respGender = document.getElementById('resp_gender').value;
+  const respPhone = document.getElementById('resp_phone').value;
+  const interests = Array.from(document.querySelectorAll('.checkbox-group input:checked')).map(c => c.value).join(';');
+  const comments = document.getElementById('comments').value;
+
+  // Respondent info
+  let row = [timestamp, respType, respOrg, respPos, interests, respCareer, respGender, respPhone];
+
+  // L1 pairwise comparison values
+  for (let i = 0; i < LEVEL1.length; i++) {
+    for (let j = i + 1; j < LEVEL1.length; j++) {
+      const pIdx = i * LEVEL1.length - (i * (i + 1)) / 2 + (j - i - 1);
+      const data = (allPairData['table_L1'] || {})[`table_L1_${pIdx}`];
+      row.push(data ? Math.round(data.numericValue * 10000) / 10000 : 1);
+    }
+  }
+
+  // L2 pairwise comparison values
+  LEVEL1.forEach(key => {
+    const factors = LEVEL2[key];
+    let pIdx = 0;
+    for (let i = 0; i < factors.length; i++) {
+      for (let j = i + 1; j < factors.length; j++) {
+        const data = (allPairData[`table_${key}`] || {})[`table_${key}_${pIdx}`];
+        row.push(data ? Math.round(data.numericValue * 10000) / 10000 : 1);
+        pIdx++;
+      }
+    }
+  });
+
+  row.push(comments);
+  return row;
+}
+
+// ============================================================
+// Send to Google Sheets
+// ============================================================
+function sendToGoogleSheets(rowData) {
+  if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+    // URL이 설정되지 않은 경우 - 테스트 모드
+    document.getElementById('submittingModal').classList.remove('active');
+    alert('Google Apps Script URL이 설정되지 않았습니다.\n설정안내.html 파일을 참고하여 URL을 설정해 주세요.\n\n(테스트 모드: 제출 완료로 처리합니다)');
+    document.getElementById('successModal').classList.add('active');
+    disableForm();
+    return;
+  }
+
+  fetch(GOOGLE_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ values: rowData })
+  })
+  .then(() => {
+    document.getElementById('submittingModal').classList.remove('active');
+    document.getElementById('successModal').classList.add('active');
+    disableForm();
+  })
+  .catch(error => {
+    document.getElementById('submittingModal').classList.remove('active');
+    alert('제출 중 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.\n오류: ' + error.message);
+  });
+}
+
+// ============================================================
+// Disable form after submission
+// ============================================================
+function disableForm() {
+  document.getElementById('btnSubmit').disabled = true;
+  document.getElementById('btnSubmit').textContent = '제출 완료';
+  // Disable all radio buttons
+  document.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
+}
+
+function closeModal() {
+  document.getElementById('successModal').classList.remove('active');
+}
+
+// ============================================================
+// Initialize
+// ============================================================
+buildHierarchyTable();
+buildLevel2Sections();
+buildPairTable('table_L1', LEVEL1);
+LEVEL1.forEach(key => {
+  buildPairTable(`table_${key}`, LEVEL2[key]);
+});
+updateProgress();
+</script>
+</body>
+</html>
