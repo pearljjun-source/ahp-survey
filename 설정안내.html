@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Sheets 연동 설정 안내</title>
+<style>
+  body { font-family: '맑은 고딕', sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; color: #2C3E50; line-height: 1.8; }
+  h1 { color: #1F4E79; border-bottom: 3px solid #1F4E79; padding-bottom: 10px; }
+  h2 { color: #2E86C1; margin-top: 30px; }
+  .step { background: #F5F7FA; border-left: 4px solid #2E86C1; padding: 16px 20px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+  .step h3 { color: #1F4E79; margin: 0 0 8px 0; }
+  code { background: #2C3E50; color: #E8DAEF; padding: 2px 8px; border-radius: 4px; font-size: 13px; }
+  pre { background: #2C3E50; color: #ECF0F1; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  .warn { background: #FFF3CD; border-left: 4px solid #E67E22; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .success { background: #D4EDDA; border-left: 4px solid #27AE60; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .flow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 20px 0; }
+  .flow-item { background: #1F4E79; color: white; padding: 10px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; }
+  .flow-arrow { font-size: 24px; color: #2E86C1; }
+  img { max-width: 100%; border: 1px solid #ddd; border-radius: 8px; margin: 10px 0; }
+  ol li { margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<h1>Google Sheets 연동 설정 안내</h1>
+
+<p>이 안내를 따라 설정하면, 응답자가 설문을 제출할 때마다 자동으로 Google Sheets에 데이터가 저장됩니다.</p>
+
+<div class="flow">
+  <div class="flow-item">응답자가 설문 작성</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-item">"설문 제출" 클릭</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-item">Google Sheets에 자동 저장</div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-item">엑셀 분석파일에 붙여넣기</div>
+</div>
+
+<hr>
+
+<h2>설정 절차 (약 5분 소요)</h2>
+
+<div class="step">
+<h3>Step 1: Google Sheets 생성</h3>
+<ol>
+  <li><a href="https://sheets.google.com" target="_blank">Google Sheets</a>에 접속합니다.</li>
+  <li>"빈 스프레드시트"를 새로 만듭니다.</li>
+  <li>시트 이름을 <code>AHP응답</code>으로 변경합니다 (하단 탭 더블클릭).</li>
+  <li>첫 번째 행(A1~AP1)에 아래 헤더를 입력합니다 (복사 붙여넣기):</li>
+</ol>
+<pre>응답일시	소속유형	소속기관	직위	관심분야	경력	성별	연락처	자립성vs연계성	자립성vs실용성	자립성vs포용성	자립성vs지속가능성	자립성vs확장성	연계성vs실용성	연계성vs포용성	연계성vs지속가능성	연계성vs확장성	실용성vs포용성	실용성vs지속가능성	실용성vs확장성	포용성vs지속가능성	포용성vs확장성	지속가능성vs확장성	[자립성]R&D역량vs기술흡수역량	[자립성]R&D역량vs인재양성	[자립성]기술흡수역량vs인재양성	[연계성]산학연관vs기업네트워크	[연계성]산학연관vs중간지원기관	[연계성]기업네트워크vs중간지원기관	[실용성]기술사업화vs기술애로	[실용성]기술사업화vs매출고용	[실용성]기술애로vs매출고용	[포용성]중소기업접근성vs청년창업	[포용성]중소기업접근성vs지역사회참여	[포용성]청년창업vs지역사회참여	[지속가능성]정책연속성vs거버넌스	[지속가능성]정책연속성vs혁신인프라	[지속가능성]거버넌스vs혁신인프라	[확장성]외부지식기술vs글로벌시장	[확장성]외부지식기술vs신산업전환	[확장성]글로벌시장vs신산업전환	추가의견</pre>
+</div>
+
+<div class="step">
+<h3>Step 2: Google Apps Script 생성</h3>
+<ol>
+  <li>Google Sheets 상단 메뉴에서 <strong>확장 프로그램 > Apps Script</strong>를 클릭합니다.</li>
+  <li>기존 코드를 모두 지우고, 아래 코드를 붙여넣습니다:</li>
+</ol>
+<pre>
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('AHP응답');
+    if (!sheet) {
+      sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    }
+
+    var data = JSON.parse(e.postData.contents);
+    var row = data.values;
+
+    sheet.appendRow(row);
+
+    return ContentService.createTextOutput(
+      JSON.stringify({ result: 'success' })
+    ).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ result: 'error', message: error.toString() })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+</pre>
+</div>
+
+<div class="step">
+<h3>Step 3: 웹 앱으로 배포</h3>
+<ol>
+  <li>Apps Script 상단의 <strong>"배포" > "새 배포"</strong>를 클릭합니다.</li>
+  <li>왼쪽의 톱니바퀴 아이콘 옆 <strong>"유형 선택"</strong>에서 <strong>"웹 앱"</strong>을 선택합니다.</li>
+  <li>설정을 다음과 같이 합니다:
+    <ul>
+      <li><strong>설명:</strong> AHP 설문 수집</li>
+      <li><strong>다음 사용자 인증정보로 실행:</strong> <code>나</code> (본인 계정)</li>
+      <li><strong>액세스 권한이 있는 사용자:</strong> <code>모든 사용자</code></li>
+    </ul>
+  </li>
+  <li><strong>"배포"</strong> 버튼을 클릭합니다.</li>
+  <li>처음 실행 시 <strong>권한 승인</strong>이 필요합니다 &rarr; "권한 검토" &rarr; 본인 계정 선택 &rarr; "허용"</li>
+  <li>배포가 완료되면 <strong>"웹 앱 URL"</strong>이 표시됩니다. 이 URL을 복사합니다.</li>
+</ol>
+</div>
+
+<div class="step">
+<h3>Step 4: 설문지에 URL 붙여넣기</h3>
+<ol>
+  <li><code>AHP_설문조사.html</code> 파일을 메모장(또는 VS Code)으로 엽니다.</li>
+  <li><code>Ctrl+H</code> (찾기/바꾸기)를 사용합니다.</li>
+  <li>찾을 내용: <code>YOUR_GOOGLE_APPS_SCRIPT_URL_HERE</code></li>
+  <li>바꿀 내용: Step 3에서 복사한 웹 앱 URL을 붙여넣기</li>
+  <li>저장합니다.</li>
+</ol>
+</div>
+
+<div class="success">
+<strong>설정 완료!</strong> 이제 설문지를 응답자에게 보내면, 제출할 때마다 Google Sheets에 자동 저장됩니다.
+</div>
+
+<hr>
+
+<h2>데이터를 엑셀 분석파일로 옮기는 방법</h2>
+
+<div class="step">
+<h3>Step 5: Google Sheets에서 데이터 복사</h3>
+<ol>
+  <li>Google Sheets에서 응답 데이터가 쌓인 것을 확인합니다.</li>
+  <li>데이터 영역(헤더 제외)을 선택합니다.</li>
+  <li><code>Ctrl+C</code>로 복사합니다.</li>
+</ol>
+</div>
+
+<div class="step">
+<h3>Step 6: 엑셀 분석파일에 붙여넣기</h3>
+<ol>
+  <li><code>충남_AHP_분석_결과_v2.xlsx</code>를 엽니다.</li>
+  <li><strong>"응답데이터"</strong> 시트로 이동합니다.</li>
+  <li><strong>B5</strong> 셀을 클릭합니다 (응답자1의 응답일시 열).</li>
+  <li><code>Ctrl+V</code>로 붙여넣기합니다.</li>
+  <li>자동으로 기하평균, 가중치, CR, 차트 등이 모두 계산됩니다.</li>
+</ol>
+</div>
+
+<div class="warn">
+<strong>주의:</strong> Google Sheets의 열 순서와 엑셀 분석파일의 열 순서가 일치하도록 설계되어 있습니다.
+Google Sheets의 헤더나 열 순서를 변경하지 마세요.
+</div>
+
+<hr>
+
+<h2>자주 묻는 질문</h2>
+
+<div class="step">
+<h3>Q: 설문지를 어떻게 배포하나요?</h3>
+<p>AHP_설문조사.html 파일을 다음 방법으로 배포할 수 있습니다:</p>
+<ul>
+  <li><strong>방법 1 (권장):</strong> GitHub Pages, Netlify, Vercel 등 무료 호스팅에 업로드 후 URL 공유</li>
+  <li><strong>방법 2:</strong> HTML 파일을 이메일에 첨부하여 전송 (응답자가 브라우저에서 열기)</li>
+  <li><strong>방법 3:</strong> 구글 드라이브에 업로드 후 공유 링크 배포</li>
+</ul>
+</div>
+
+<div class="step">
+<h3>Q: 응답이 제대로 들어오는지 어떻게 확인하나요?</h3>
+<p>Google Sheets를 열어두면 실시간으로 새로운 행이 추가되는 것을 확인할 수 있습니다.</p>
+</div>
+
+<div class="step">
+<h3>Q: 설문을 수정하고 싶으면 어떻게 하나요?</h3>
+<p>Apps Script를 수정한 경우, 반드시 <strong>"배포" > "배포 관리" > "새 버전"</strong>으로 다시 배포해야 반영됩니다.</p>
+</div>
+
+</body>
+</html>

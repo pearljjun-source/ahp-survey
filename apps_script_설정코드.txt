@@ -1,0 +1,46 @@
+function setupSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getActiveSheet();
+  sheet.setName('AHP응답');
+
+  var headers = [
+    '응답일시','소속유형','소속기관','직위','관심분야','경력','성별','연락처',
+    '자립성vs연계성','자립성vs실용성','자립성vs포용성','자립성vs지속가능성','자립성vs확장성',
+    '연계성vs실용성','연계성vs포용성','연계성vs지속가능성','연계성vs확장성',
+    '실용성vs포용성','실용성vs지속가능성','실용성vs확장성',
+    '포용성vs지속가능성','포용성vs확장성',
+    '지속가능성vs확장성',
+    '[자립성]R&D역량vs기술흡수역량','[자립성]R&D역량vs인재양성','[자립성]기술흡수역량vs인재양성',
+    '[연계성]산학연관vs기업네트워크','[연계성]산학연관vs중간지원기관','[연계성]기업네트워크vs중간지원기관',
+    '[실용성]기술사업화vs기술애로','[실용성]기술사업화vs매출고용','[실용성]기술애로vs매출고용',
+    '[포용성]중소기업접근성vs청년창업','[포용성]중소기업접근성vs지역사회참여','[포용성]청년창업vs지역사회참여',
+    '[지속가능성]정책연속성vs거버넌스','[지속가능성]정책연속성vs혁신인프라','[지속가능성]거버넌스vs혁신인프라',
+    '[확장성]외부지식기술vs글로벌시장','[확장성]외부지식기술vs신산업전환','[확장성]글로벌시장vs신산업전환',
+    '추가의견'
+  ];
+
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+  sheet.setFrozenRows(1);
+
+  SpreadsheetApp.getUi().alert('헤더 설정 완료! (' + headers.length + '개 열)');
+}
+
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('AHP응답');
+    if (!sheet) {
+      sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    }
+    var data = JSON.parse(e.postData.contents);
+    var row = data.values;
+    sheet.appendRow(row);
+    return ContentService.createTextOutput(
+      JSON.stringify({ result: 'success' })
+    ).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(
+      JSON.stringify({ result: 'error', message: error.toString() })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+}
