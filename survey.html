@@ -234,6 +234,17 @@
     color: var(--red); font-size: 13px; margin-top: 8px;
     display: none; font-weight: 600;
   }
+  .form-group.invalid input,
+  .form-group.invalid select {
+    border-color: var(--red);
+    background: #FFF5F5;
+  }
+  .form-group.invalid .checkbox-group {
+    border: 1px solid var(--red);
+    border-radius: 8px;
+    padding: 8px;
+    background: #FFF5F5;
+  }
 
   /* Modal */
   .modal-overlay {
@@ -343,7 +354,7 @@
     연락처는 커피 쿠폰 발송을 위한 자료로 활용되며, 쿠폰 발송 이후 즉시 폐기합니다.</div>
 
     <div class="form-group">
-      <label>소속 유형</label>
+      <label>소속 유형 <span style="color:var(--red); font-size:12px;">*필수</span></label>
       <select id="resp_type">
         <option value="">-- 선택 --</option>
         <option value="기업">기업</option>
@@ -354,11 +365,11 @@
       </select>
     </div>
     <div class="form-group">
-      <label>소속기관/기업(이름)</label>
+      <label>소속기관/기업(이름) <span style="color:var(--red); font-size:12px;">*필수</span></label>
       <input type="text" id="resp_org" placeholder="소속기관명을 입력해 주세요">
     </div>
     <div class="form-group">
-      <label>직위/직책</label>
+      <label>직위/직책 <span style="color:var(--red); font-size:12px;">*필수</span></label>
       <select id="resp_position">
         <option value="">-- 선택 --</option>
         <option value="대표">대표</option>
@@ -369,7 +380,7 @@
       </select>
     </div>
     <div class="form-group">
-      <label>관심 분야 (중복선택 가능)</label>
+      <label>관심 분야 (중복선택 가능) <span style="color:var(--red); font-size:12px;">*필수</span></label>
       <div class="checkbox-group">
         <label><input type="checkbox" value="지역혁신정책"> 지역혁신정책</label>
         <label><input type="checkbox" value="기업지원"> 기업지원</label>
@@ -380,7 +391,7 @@
       </div>
     </div>
     <div class="form-group">
-      <label>관련 경력</label>
+      <label>관련 경력 <span style="color:var(--red); font-size:12px;">*필수</span></label>
       <select id="resp_career">
         <option value="">-- 선택 --</option>
         <option value="5년 미만">5년 미만</option>
@@ -390,7 +401,7 @@
       </select>
     </div>
     <div class="form-group">
-      <label>성별</label>
+      <label>성별 <span style="color:var(--red); font-size:12px;">*필수</span></label>
       <select id="resp_gender">
         <option value="">-- 선택 --</option>
         <option value="남성">남성</option>
@@ -398,9 +409,10 @@
       </select>
     </div>
     <div class="form-group">
-      <label>연락처 (커피쿠폰 발송용)</label>
+      <label>연락처 (커피쿠폰 발송용) <span style="color:#888; font-size:12px;">선택</span></label>
       <input type="tel" id="resp_phone" placeholder="010-0000-0000">
     </div>
+    <div class="error-msg" id="error_resp">필수 항목을 모두 입력해 주세요.</div>
   </div>
 
   <!-- Section 2: AHP 응답방법 -->
@@ -666,6 +678,44 @@ function updateProgress() {
 // ============================================================
 function validate() {
   let valid = true;
+
+  // Validate respondent info (section 1)
+  const requiredFields = [
+    { id: 'resp_type', type: 'select' },
+    { id: 'resp_org', type: 'input' },
+    { id: 'resp_position', type: 'select' },
+    { id: 'resp_career', type: 'select' },
+    { id: 'resp_gender', type: 'select' }
+  ];
+  let respValid = true;
+  requiredFields.forEach(f => {
+    const el = document.getElementById(f.id);
+    const group = el.closest('.form-group');
+    if (!el.value.trim()) {
+      respValid = false;
+      group.classList.add('invalid');
+    } else {
+      group.classList.remove('invalid');
+    }
+  });
+  // Check interest checkboxes (at least one)
+  const interestChecked = document.querySelectorAll('.checkbox-group input:checked').length > 0;
+  const interestGroup = document.querySelector('.checkbox-group').closest('.form-group');
+  if (!interestChecked) {
+    respValid = false;
+    interestGroup.classList.add('invalid');
+  } else {
+    interestGroup.classList.remove('invalid');
+  }
+  const errResp = document.getElementById('error_resp');
+  if (!respValid) {
+    valid = false;
+    errResp.style.display = 'block';
+  } else {
+    errResp.style.display = 'none';
+  }
+
+  // Validate AHP pairwise comparisons
   const sections = ['L1', ...LEVEL1];
   const tableIds = ['table_L1', ...LEVEL1.map(k => `table_${k}`)];
   const items = [LEVEL1, ...LEVEL1.map(k => LEVEL2[k])];
@@ -708,8 +758,8 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcVNVVvfoiIQ
 function submitSurvey() {
   if (!validate()) {
     document.getElementById('globalError').style.display = 'block';
-    const firstError = document.querySelector('.pair-row.incomplete');
-    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const firstInvalid = document.querySelector('.form-group.invalid') || document.querySelector('.pair-row.incomplete');
+    if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
   document.getElementById('globalError').style.display = 'none';
